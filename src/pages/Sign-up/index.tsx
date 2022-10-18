@@ -10,7 +10,6 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { useNavigate } from 'react-router-dom';
-import yup from 'yup';
 
 import { ApiSignUp } from '../../service/api';
 
@@ -27,20 +26,6 @@ function Copyright(props: any) {
   );
 }
 
-const loginSchema = yup.object().shape({
-    email: yup
-      .string()
-      .email("O campo precisa conter uma email válido")
-      .required("Campo obrigatório"),
-    password: yup
-      .string()
-      .min(5, "A senha deve ter no mínimo 5 caracteres")
-      .required("Campo obrigatório"),
-    confirmPassword: yup
-      .string()
-      .required("Campo obrigatório")
-      .oneOf([yup.ref("password"), null], "As senhas devem ser iguais"),
-});
 
 export default  function SignUp() {
     const navigate = useNavigate();

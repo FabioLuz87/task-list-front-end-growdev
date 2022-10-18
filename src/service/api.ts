@@ -1,4 +1,5 @@
-import axios from 'axios';
+import { Alert } from '@mui/material';
+import axios, { AxiosError } from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 export async function ApiLogin(data: FormData) {
@@ -26,12 +27,16 @@ export async function ApiSignUp(data: FormData) {
             email: data.get('email'),
             pass: data.get('password'),
         });
+        
+        alert(axiosResponse.data.msg);
 
-        alert(axiosResponse.data);
-
+        localStorage.setItem("currentUser", "");
+        localStorage.setItem("currentUser", JSON.stringify(axiosResponse.data.id));
+      
         return true;
 
-    } catch (error) {
-        console.log(error);
+    } catch (error: any) {
+        alert(error.response.data);
+        return false;
     }
 }
