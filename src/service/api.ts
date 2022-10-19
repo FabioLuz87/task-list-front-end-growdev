@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-type respSignUp = {
+export type respSignUp = {
     msg: string,
     id: string,
     name: string
@@ -14,12 +14,14 @@ export async function ApiLogin(data: FormData) {
             pass: data.get('password'),
         });
 
+        const res:respSignUp = axiosResponse.data
+
         localStorage.setItem("currentUser", "");
-        localStorage.setItem("currentUser", JSON.stringify(axiosResponse.data.id));
+        localStorage.setItem("currentUser", JSON.stringify(res));
 
         return true;
-    } catch (error: any) {
-        alert(error.response.data);
+    } catch (error: any) {       
+        alert(error.response.data.err);
         return false;
     }
 };
@@ -33,15 +35,17 @@ export async function ApiSignUp(data: FormData) {
             email: data.get('email'),
             pass: data.get('password'),
         });
+
+        const res:respSignUp = axiosResponse.data
         
         alert(axiosResponse.data.msg);
 
         localStorage.setItem("currentUser", "");
-        localStorage.setItem("currentUser", JSON.stringify(axiosResponse.data.id));
+        localStorage.setItem("currentUser", JSON.stringify(res));
         
         return true;
     } catch (error: any) {
-        alert(error.response.data);
+        alert(error.response.data.err);
         return false;
     }
 }

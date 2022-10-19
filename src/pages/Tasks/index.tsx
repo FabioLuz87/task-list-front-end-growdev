@@ -9,8 +9,9 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
-import { Button, Box, Typography, Modal, TextField } from '@mui/material';
+import { Button, Box, Typography, Modal, TextField, Chip, Avatar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { respSignUp } from '../../service/api';
 
 const style = {
   position: 'absolute',
@@ -57,8 +58,10 @@ interface Data {
 }
 
 export default function Task(): JSX.Element {
-  const navigate = useNavigate();  
-  const userId = (localStorage.getItem("currentUser"))?.replaceAll('"','');
+  const navigate = useNavigate();
+  const itemLocalStorage = localStorage.getItem("currentUser");   
+  const userId: respSignUp = itemLocalStorage ? JSON.parse(itemLocalStorage) : '';
+  const userName = userId.name;
   const [inputDescription, setInputDescription] = React.useState('');
   const [inputDescriptionUpdate, setInputDescriptionUpdate] = React.useState('');
   const [inputDetail, setInputDetail] = React.useState('');
@@ -100,7 +103,7 @@ export default function Task(): JSX.Element {
       setRows([]);
       axios
         .get(
-          process.env.REACT_APP_URL + `/users/${userId}/tasks`
+          process.env.REACT_APP_URL + `/users/${userId.id}/tasks`
         )
         .then((response) => {
             console.log('>>>>',response);
@@ -136,7 +139,7 @@ export default function Task(): JSX.Element {
       detail: inputDetail,
     };
     axios
-      .post(process.env.REACT_APP_URL + `/users/${userId}/tasks`, body)
+      .post(process.env.REACT_APP_URL + `/users/${userId.id}/tasks`, body)
       .then((response) => {
         setRefreshTable(true);
       })
@@ -169,7 +172,7 @@ export default function Task(): JSX.Element {
       detail: inputDetailUpdate,
     };
     axios
-      .put(process.env.REACT_APP_URL + `/users/${userId}/tasks/${uuidLocal}`, bodyEditing)
+      .put(process.env.REACT_APP_URL + `/users/${userId.id}/tasks/${uuidLocal}`, bodyEditing)
       .then((response) => {
         setRefreshTable(true);
         handleCloseUpdate();
@@ -191,6 +194,8 @@ export default function Task(): JSX.Element {
       
       <Paper sx={{ width: '100%' }}>
         <Box display="flex" justifyContent="center" alignItems="center" gap={2} paddingTop={2}>
+        <Avatar alt="Remy Sharp" src="https://i.pravatar.cc/150" />
+        <Chip label={userName.toUpperCase()} />
           <TextField
             id="descriptionInput"
             label="Descrição"
@@ -198,7 +203,7 @@ export default function Task(): JSX.Element {
             onChange={(e) => setInputDescription(e.target.value)}
           />
           <TextField
-            sx={{ width: '50%' }}
+            sx={{ width: '55%' }}
             id="detailInput"
             label="Detalhamento"
             value={inputDetail}
