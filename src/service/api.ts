@@ -1,8 +1,14 @@
 import axios from 'axios';
 
+type respSignUp = {
+    msg: string,
+    id: string,
+    name: string
+}
+
 export async function ApiLogin(data: FormData) {
     try {
-        const axiosResponse = await axios.post('http://localhost:8080/login',
+        const axiosResponse = await axios.post(process.env.REACT_APP_URL + '/login',
         {
             email: data.get('email'),
             pass: data.get('password'),
@@ -21,7 +27,7 @@ export async function ApiLogin(data: FormData) {
 export async function ApiSignUp(data: FormData) {
 
     try {
-        const axiosResponse = await axios.post('http://localhost:8080/user',
+        const axiosResponse = await axios.post(process.env.REACT_APP_URL + '/user',
         {
             name: data.get('name'),
             email: data.get('email'),

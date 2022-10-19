@@ -11,6 +11,7 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import { Button, Box, Typography, Modal, TextField } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+
 const style = {
   position: 'absolute',
   top: '50%',
@@ -77,6 +78,11 @@ export default function Task(): JSX.Element {
     setInputDetailUpdate(detail);
   };
 
+  const logOut = () => {
+    localStorage.setItem("currentUser", "");
+    navigate('/');
+  }
+
   const handleCloseUpdate = () => setOpenUpdate(false);
 
   const handleOpenDelete = (uuid: string) => {
@@ -94,7 +100,7 @@ export default function Task(): JSX.Element {
       setRows([]);
       axios
         .get(
-          `http://localhost:8080/users/${userId}/tasks`
+          process.env.REACT_APP_URL + `/users/${userId}/tasks`
         )
         .then((response) => {
             console.log('>>>>',response);
@@ -130,7 +136,7 @@ export default function Task(): JSX.Element {
       detail: inputDetail,
     };
     axios
-      .post(`http://localhost:8080/users/${userId}/tasks`, body)
+      .post(process.env.REACT_APP_URL + `/users/${userId}/tasks`, body)
       .then((response) => {
         setRefreshTable(true);
       })
@@ -145,7 +151,7 @@ export default function Task(): JSX.Element {
   const onDelete = (uuid: string) => {
     axios
       .delete(
-        `https://tasklist-back-crhist0.herokuapp.com/task?token=${JSON.stringify(userId)}&id=${uuid}`
+        process.env.REACT_APP_URL + `/users/${userId}/tasks/${uuidLocal}`
       )
       .then((response) => {
         setRefreshTable(true);
@@ -163,7 +169,7 @@ export default function Task(): JSX.Element {
       detail: inputDetailUpdate,
     };
     axios
-      .put(`http://localhost:8080/users/${userId}/tasks/${uuidLocal}`, bodyEditing)
+      .put(process.env.REACT_APP_URL + `/users/${userId}/tasks/${uuidLocal}`, bodyEditing)
       .then((response) => {
         setRefreshTable(true);
         handleCloseUpdate();
@@ -182,7 +188,8 @@ export default function Task(): JSX.Element {
       alignItems="center"
       justifyContent="center"
     >
-      <Paper sx={{ width: '90%' }}>
+      
+      <Paper sx={{ width: '100%' }}>
         <Box display="flex" justifyContent="center" alignItems="center" gap={2} paddingTop={2}>
           <TextField
             id="descriptionInput"
@@ -205,6 +212,13 @@ export default function Task(): JSX.Element {
             onClick={() => onSave()}
           >
             Salvar Recado
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => logOut()}
+            color="error"
+          >
+            Log Out
           </Button>
         </Box>
         <TableContainer sx={{ maxHeight: 440 }}>
