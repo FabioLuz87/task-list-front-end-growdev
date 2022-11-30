@@ -14,14 +14,16 @@ export async function ApiLogin(data: FormData) {
             pass: data.get('password'),
         });
 
-        const res:respSignUp = axiosResponse.data
+        const res: respSignUp = axiosResponse.data
+        console.log(">>>> ",res);
+        
 
         localStorage.setItem("currentUser", "");
         localStorage.setItem("currentUser", JSON.stringify(res));
 
         return true;
     } catch (error: any) {       
-        alert(error.response.data.err);
+        alert(error.response.data.msg);
         return false;
     }
 };

@@ -9,7 +9,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
-import { Button, Box, Typography, Modal, TextField, Chip, Avatar } from '@mui/material';
+import { Button, Box, Typography, Modal, TextField, Chip, Avatar, Checkbox, FormGroup, FormControlLabel, LinearProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { respSignUp } from '../../service/api';
 
@@ -26,10 +26,10 @@ const style = {
 };
 
 interface Column {
-  id: 'id' | 'description' | 'detail' | 'actions';
+  id: 'id' | 'description' | 'detail' | 'actions' ;
   label: string;
   minWidth?: number;
-  align?: 'right';
+  align?: 'right' | 'center' | undefined;
   format?: (value: number) => string;
 }
 
@@ -46,7 +46,7 @@ const columns: Column[] = [
     id: 'actions',
     label: 'Ações',
     minWidth: 170,
-    align: 'right',
+    align: 'center',
   },
 ];
 
@@ -54,6 +54,7 @@ interface Data {
   id: string;
   description: string;
   detail: string;
+  isItArchived: boolean;
   actions: ReactElement;
 }
 
@@ -73,6 +74,7 @@ export default function Task(): JSX.Element {
   const [refreshTable, setRefreshTable] = useState(true);
   const [openUpdate, setOpenUpdate] = React.useState(false);
   const [openDelete, setOpenDelete] = React.useState(false);
+  const [openLoading, setOpenLoading] = React.useState(false);
 
   const handleOpenUpdate = (uuid: string, description: string, detail: string) => {
     setOpenUpdate(true);
@@ -99,24 +101,35 @@ export default function Task(): JSX.Element {
   };
 
   useEffect(() => {
-    if (refreshTable) {       
-      setRows([]);
-      axios
-        .get(
-          process.env.REACT_APP_URL + `/users/${userId.id}/tasks`
-        )
-        .then((response) => {
-            console.log('>>>>',response);
-            
+    if (refreshTable) {
+      setOpenLoading(true);
+      setTimeout(() => {
+        setRows([]);
+        axios
+        .get(process.env.REACT_APP_URL + `/users/${userId.id}/tasks`)
+        .then((response) => {              
           loadList(response.data);
         })
         .catch((err) => {
           alert('Não foi possível listar suas tarefas/recados.');
           navigate("/");
         });
-      setRefreshTable(false);
+        setRefreshTable(false);
+      },1100)       
     }
   }, [refreshTable]);
+
+  const handleArchived = (taskId: string) => {
+    axios
+    .patch(process.env.REACT_APP_URL + `/users/${userId.id}/tasks/${taskId}`)
+    .then((response) => {
+      setRefreshTable(true);              
+    })
+    .catch((err) => {
+      alert(err.msg);
+      navigate("/");
+    });;
+  }
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
@@ -131,6 +144,9 @@ export default function Task(): JSX.Element {
     list.forEach((item: Data) => {
       setRows((prev) => [...prev, item]);
     });
+    setTimeout(() => {
+      setOpenLoading(false);
+    }, 1000);
   };
 
   const onSave = () => {
@@ -191,7 +207,7 @@ export default function Task(): JSX.Element {
       alignItems="center"
       justifyContent="center"
     >
-      
+  
       <Paper sx={{ width: '100%' }}>
         <Box display="flex" justifyContent="center" alignItems="center" gap={2} paddingTop={2}>
         <Avatar alt="Remy Sharp" src="https://i.pravatar.cc/150" />
@@ -244,7 +260,7 @@ export default function Task(): JSX.Element {
             <TableBody>
               {rows
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => {
+                .map((row, index) => {                 
                   return (
                     <TableRow hover role="checkbox" tabIndex={-1} key={row.id}>
                       {columns.map((column) => {
@@ -252,8 +268,14 @@ export default function Task(): JSX.Element {
                         return (
                           <TableCell key={column.id} align={column.align}>
                             {column.id === 'id' ? index + 1 + page * rowsPerPage : value}
-                            {column.id === 'actions' && (
+                            {(column.id === 'actions' && !row.isItArchived ) && (
                               <Box>
+                                <FormControlLabel control={
+                                <Checkbox 
+                                onChange={() => handleArchived(row.id)}
+                                inputProps={{ 'aria-label': 'controlled' }}
+                                />
+                              } label="Arquivar" />
                                 <Button
                                   onClick={() =>
                                     handleOpenUpdate(row.id, row.description, row.detail)
@@ -273,6 +295,34 @@ export default function Task(): JSX.Element {
                                 </Button>
                               </Box>
                             )}
+                            {(column.id === 'actions' && row.isItArchived ) && (
+                              <Box>
+                                <FormControlLabel control={
+                                <Checkbox checked
+                                onChange={() => handleArchived(row.id)}
+                                inputProps={{ 'aria-label': 'controlled' }}
+                                />
+                              } label="Arquivar" />
+                                <Button disabled
+                                  onClick={() =>
+                                    handleOpenUpdate(row.id, row.description, row.detail)
+                                  }
+                                  variant="outlined"
+                                  color="primary"
+                                >
+                                  Editar
+                                </Button>
+                                <Button disabled
+                                  onClick={() => handleOpenDelete(row.id)}
+                                  variant="outlined"
+                                  startIcon={<DeleteIcon />}
+                                  color="error"
+                                >
+                                  Apagar
+                                </Button>
+                              </Box>
+                            )}
+
                           </TableCell>
                         );
                       })}
@@ -292,6 +342,15 @@ export default function Task(): JSX.Element {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
+      <Modal
+        open={openLoading}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+        <LinearProgress />
+        </Box>
+      </Modal>
       <Modal
         open={openUpdate}
         onClose={handleCloseUpdate}
